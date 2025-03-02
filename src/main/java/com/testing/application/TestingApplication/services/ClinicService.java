@@ -2,6 +2,8 @@ package com.testing.application.TestingApplication.services;
 
 import com.testing.application.TestingApplication.models.ClinicDetails;
 import com.testing.application.TestingApplication.repositories.ClinicRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -11,19 +13,9 @@ import java.util.Optional;
 @Service
 public class ClinicService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ClinicService.class);
+
     private final ClinicRepository clinicRepository;
-
-    public ClinicService(ClinicRepository clinicRepository) {
-        this.clinicRepository = clinicRepository;
-    }
-
-    public List<ClinicDetails> getAllClinics() {
-        return clinicRepository.findAll();
-    }
-
-    public ClinicDetails createClinicCentre(ClinicDetails clinicDetails) {
-        return clinicRepository.insert(clinicDetails);
-    }
 
     // Merging Only Non-Null Fields Using Reflection
     private void mergeNonNullFields(Object source, Object target) {
@@ -43,13 +35,37 @@ public class ClinicService {
         }
     }
 
-    public ClinicDetails updateClinicDetails(ClinicDetails clinicDetails) {
-        Optional<ClinicDetails> dbClinic = clinicRepository.findById(clinicDetails.getId());
+    public ClinicService(ClinicRepository clinicRepository) {
+        this.clinicRepository = clinicRepository;
+    }
+
+    public List<ClinicDetails> getAllClinics() {
+        logger.info("Fetching all clinics details");
+        return clinicRepository.findAll();
+    }
+
+    public ClinicDetails createClinicCentre(ClinicDetails clinicDetails) {
+        logger.info("Creating new clinic centre");
+        return clinicRepository.insert(clinicDetails);
+    }
+
+    public ClinicDetails getClinicById(String id) {
+        logger.info("Finding clinic details for id: {}", id);
+        Optional<ClinicDetails> dbClinic = clinicRepository.findById(id);
+
         if (dbClinic.isEmpty()) {
+            logger.error("No clinic details for id: {}", id);
             throw new RuntimeException("Clinic not found");
         }
 
-        ClinicDetails updatedClinic = dbClinic.get();
+        return dbClinic.get();
+    }
+
+    public ClinicDetails updateClinicDetails(ClinicDetails clinicDetails) {
+        ClinicDetails updatedClinic = getClinicById(clinicDetails.getId());
+
+        logger.info("Updating clinic details");
+
         mergeNonNullFields(clinicDetails, updatedClinic);
         clinicRepository.save(updatedClinic);
 
@@ -57,18 +73,8 @@ public class ClinicService {
     }
 
     public void deleteClinicById(String id) {
-        Optional<ClinicDetails> dbClinic = clinicRepository.findById(id);
-        if (dbClinic.isEmpty()) {
-            throw new RuntimeException("Clinic not found");
-        }
+        logger.info("Deleting clinic details");
         clinicRepository.deleteById(id);
     }
 
-    public ClinicDetails getClinicById(String id) {
-        Optional<ClinicDetails> dbClinic = clinicRepository.findById(id);
-        if (dbClinic.isEmpty()) {
-            throw new RuntimeException("Clinic not found");
-        }
-        return dbClinic.get();
-    }
 }

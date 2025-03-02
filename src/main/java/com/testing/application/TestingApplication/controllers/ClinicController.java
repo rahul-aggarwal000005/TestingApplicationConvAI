@@ -1,5 +1,6 @@
 package com.testing.application.TestingApplication.controllers;
 
+import com.testing.application.TestingApplication.dto.ResponseWrapper;
 import com.testing.application.TestingApplication.models.ClinicDetails;
 import com.testing.application.TestingApplication.services.ClinicService;
 import org.springframework.http.HttpStatus;
@@ -19,42 +20,51 @@ public class ClinicController {
     }
 
     @GetMapping("/getAllClinics")
-    public ResponseEntity<List<ClinicDetails>> getAllClinics() {
-        return ResponseEntity.ok(clinicService.getAllClinics());
+    public ResponseEntity<ResponseWrapper<List<ClinicDetails>>> getAllClinics() {
+        return ResponseEntity.ok(new ResponseWrapper<>(null, clinicService.getAllClinics()));
     }
 
     @GetMapping("/getAllClinics/{id}")
-    public ResponseEntity<?> getClinicById(@PathVariable String id) {
+    public ResponseEntity<ResponseWrapper<ClinicDetails>> getClinicById(@PathVariable String id) {
         try {
             ClinicDetails clinicDetails = clinicService.getClinicById(id);
-            return ResponseEntity.ok(clinicDetails);
+            return ResponseEntity.ok(new ResponseWrapper<>(null, clinicDetails));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseWrapper<>(e.getMessage(), null));
         }
     }
 
     @PostMapping("/createClinic")
-    public ResponseEntity<ClinicDetails> createClinic(@RequestBody ClinicDetails clinicDetails) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(clinicService.createClinicCentre(clinicDetails));
+    public ResponseEntity<ResponseWrapper<ClinicDetails>> createClinic(@RequestBody ClinicDetails clinicDetails) {
+        ClinicDetails clinic = clinicService.createClinicCentre(clinicDetails);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new ResponseWrapper<>("Successfully added clinic details", clinic));
     }
 
     @PutMapping("/updateClinic")
-    public ResponseEntity<?> updateClinicDetails(@RequestBody ClinicDetails clinicDetails) {
+    public ResponseEntity<ResponseWrapper<ClinicDetails>> updateClinicDetails(@RequestBody ClinicDetails clinicDetails) {
         try {
             ClinicDetails updatedClinicDetails = clinicService.updateClinicDetails(clinicDetails);
-            return ResponseEntity.ok(updatedClinicDetails);
+            return ResponseEntity.ok(new ResponseWrapper<>("Updated Successfully", updatedClinicDetails));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseWrapper<>(e.getMessage(), null));
         }
     }
 
     @DeleteMapping("/deleteClinic/{id}")
-    public ResponseEntity<String> deleteClinic(@PathVariable String id) {
+    public ResponseEntity<ResponseWrapper<String>> deleteClinic(@PathVariable String id) {
         try {
             clinicService.deleteClinicById(id);
-            return ResponseEntity.ok("Deleted Successfully");
+            return ResponseEntity.ok(new ResponseWrapper<>("Deleted Successfully", null));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND).
+                    body(new ResponseWrapper<>(e.getMessage(), null));
         }
     }
 }

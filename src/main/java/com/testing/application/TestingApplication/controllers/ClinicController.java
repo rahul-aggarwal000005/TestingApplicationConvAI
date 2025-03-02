@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/clinic")
 public class ClinicController {
 
     private final ClinicService clinicService;
@@ -19,12 +19,12 @@ public class ClinicController {
         this.clinicService = clinicService;
     }
 
-    @GetMapping("/getAllClinics")
+    @GetMapping("/getAll")
     public ResponseEntity<ResponseWrapper<List<ClinicDetails>>> getAllClinics() {
         return ResponseEntity.ok(new ResponseWrapper<>(null, clinicService.getAllClinics()));
     }
 
-    @GetMapping("/getAllClinics/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseWrapper<ClinicDetails>> getClinicById(@PathVariable String id) {
         try {
             ClinicDetails clinicDetails = clinicService.getClinicById(id);
@@ -36,7 +36,7 @@ public class ClinicController {
         }
     }
 
-    @PostMapping("/createClinic")
+    @PostMapping("/create")
     public ResponseEntity<ResponseWrapper<ClinicDetails>> createClinic(@RequestBody ClinicDetails clinicDetails) {
         ClinicDetails clinic = clinicService.createClinicCentre(clinicDetails);
         return ResponseEntity
@@ -44,7 +44,7 @@ public class ClinicController {
                 .body(new ResponseWrapper<>("Successfully added clinic details", clinic));
     }
 
-    @PutMapping("/updateClinic")
+    @PutMapping("/update")
     public ResponseEntity<ResponseWrapper<ClinicDetails>> updateClinicDetails(@RequestBody ClinicDetails clinicDetails) {
         try {
             ClinicDetails updatedClinicDetails = clinicService.updateClinicDetails(clinicDetails);
@@ -56,7 +56,7 @@ public class ClinicController {
         }
     }
 
-    @DeleteMapping("/deleteClinic/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResponseWrapper<String>> deleteClinic(@PathVariable String id) {
         try {
             clinicService.deleteClinicById(id);

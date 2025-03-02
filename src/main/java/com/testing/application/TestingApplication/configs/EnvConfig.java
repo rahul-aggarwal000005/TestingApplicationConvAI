@@ -13,10 +13,17 @@ public class EnvConfig {
     private static final String MONGO_AUTH_DB = "MONGO_AUTH_DB";
 
     static {
-        Dotenv dotenv = Dotenv.load();
-        System.setProperty(MONGO_HOST, dotenv.get(MONGO_HOST));
-        System.setProperty(MONGO_PORT, dotenv.get(MONGO_PORT));
-        System.setProperty(MONGO_DB, dotenv.get(MONGO_DB));
-        System.setProperty(MONGO_AUTH_DB, dotenv.get(MONGO_AUTH_DB));
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+        setSystemProperty(MONGO_HOST, dotenv.get(MONGO_HOST, "localhost"));  // Default to localhost
+        setSystemProperty(MONGO_PORT, dotenv.get(MONGO_PORT, "27017"));     // Default MongoDB port
+        setSystemProperty(MONGO_DB, dotenv.get(MONGO_DB, "testdb"));        // Default DB name
+        setSystemProperty(MONGO_AUTH_DB, dotenv.get(MONGO_AUTH_DB, "admin")); // Default auth DB
+    }
+
+    private static void setSystemProperty(String key, String value) {
+        if (value != null) {
+            System.setProperty(key, value);
+        }
     }
 }

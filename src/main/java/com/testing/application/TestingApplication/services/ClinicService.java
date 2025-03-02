@@ -22,7 +22,7 @@ public class ClinicService {
     }
 
     public ClinicDetails createClinicCentre(ClinicDetails clinicDetails) {
-         return clinicRepository.insert(clinicDetails);
+        return clinicRepository.insert(clinicDetails);
     }
 
     // Merging Only Non-Null Fields Using Reflection
@@ -43,30 +43,32 @@ public class ClinicService {
         }
     }
 
-    public String updateClinicDetails(ClinicDetails clinicDetails) {
+    public ClinicDetails updateClinicDetails(ClinicDetails clinicDetails) {
         Optional<ClinicDetails> dbClinic = clinicRepository.findById(clinicDetails.getId());
-        if(dbClinic.isEmpty()) {
-            return "No clinic is associated with this id";
+        if (dbClinic.isEmpty()) {
+            throw new RuntimeException("Clinic not found");
         }
 
-        ClinicDetails existingClinic = dbClinic.get();
-        mergeNonNullFields(clinicDetails, existingClinic);
-        clinicRepository.save(existingClinic);
-        
-        return "Updated Successfully";
+        ClinicDetails updatedClinic = dbClinic.get();
+        mergeNonNullFields(clinicDetails, updatedClinic);
+        clinicRepository.save(updatedClinic);
+
+        return updatedClinic;
     }
 
-    public String deleteClinicById(String id) {
+    public void deleteClinicById(String id) {
         Optional<ClinicDetails> dbClinic = clinicRepository.findById(id);
-        if(dbClinic.isEmpty()) {
-            return "No clinic is associated with this id";
+        if (dbClinic.isEmpty()) {
+            throw new RuntimeException("Clinic not found");
         }
         clinicRepository.deleteById(id);
-        return "Deleted Successfully";
     }
 
     public ClinicDetails getClinicById(String id) {
         Optional<ClinicDetails> dbClinic = clinicRepository.findById(id);
-        return dbClinic.orElse(null);
+        if (dbClinic.isEmpty()) {
+            throw new RuntimeException("Clinic not found");
+        }
+        return dbClinic.get();
     }
 }

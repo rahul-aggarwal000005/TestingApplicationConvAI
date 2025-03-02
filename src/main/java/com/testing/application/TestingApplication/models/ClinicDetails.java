@@ -2,15 +2,15 @@ package com.testing.application.TestingApplication.models;
 
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Getter
-@Setter
+@Document
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ClinicDetails {
 
+    @Id
     private String id;
     private String name;
     private String address;

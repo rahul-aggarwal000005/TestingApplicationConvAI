@@ -5,7 +5,11 @@ import com.testing.application.TestingApplication.models.ClinicDetails;
 import com.testing.application.TestingApplication.repositories.ClinicRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -19,6 +23,7 @@ public class ClinicService {
 
     private final ClinicRepository clinicRepository;
     private final GeocodingService geocodingService;
+    private final MongoTemplate mongoTemplate;
 
     // Merging Only Non-Null Fields Using Reflection
     private void mergeNonNullFields(Object source, Object target) {
@@ -38,9 +43,10 @@ public class ClinicService {
         }
     }
 
-    public ClinicService(ClinicRepository clinicRepository, GeocodingService geocodingService) {
+    public ClinicService(ClinicRepository clinicRepository, GeocodingService geocodingService, MongoTemplate mongoTemplate) {
         this.clinicRepository = clinicRepository;
         this.geocodingService = geocodingService;
+        this.mongoTemplate = mongoTemplate;
     }
 
     public List<ClinicDetails> getAllClinics() {
@@ -86,7 +92,11 @@ public class ClinicService {
 
     public List<ClinicDetails> getNearByClinics(String city, String zipcode) {
         GeoLocation geoLocation = geocodingService.getLatLongForLocation(city, zipcode);
-        return clinicRepository
-                .findNearbyClinics(geoLocation.longitude(), geoLocation.latitude());
+
+        Point location = new Point(geoLocation.longitude(), geoLocation.latitude());
+        Query query = new Query(Criteria.where(ClinicDetails.LOCATION_FIELD).nearSphere(location));
+
+        logger.info("Fetching nearby clinics...");
+        return mongoTemplate.find(query, ClinicDetails.class);
     }
 }

@@ -36,6 +36,19 @@ public class ClinicController {
         }
     }
 
+    @GetMapping("/nearBy")
+    public ResponseEntity<ResponseWrapper<List<ClinicDetails>>> getNearbyClinics(
+            @RequestParam(required = false) String city,  @RequestParam(required = false) String zipcode) {
+        try {
+            List<ClinicDetails> nearByClinics = clinicService.getNearByClinics(city, zipcode);
+            return ResponseEntity.ok(new ResponseWrapper<>(null, nearByClinics));
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseWrapper<>(e.getMessage(), null));
+        }
+    }
+
     @PostMapping("/create")
     public ResponseEntity<ResponseWrapper<ClinicDetails>> createClinic(@RequestBody ClinicDetails clinicDetails) {
         ClinicDetails clinic = clinicService.createClinicCentre(clinicDetails);

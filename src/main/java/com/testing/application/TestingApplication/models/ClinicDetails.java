@@ -3,6 +3,8 @@ package com.testing.application.TestingApplication.models;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -20,4 +22,6 @@ public class ClinicDetails {
     private String openingHours;
     private double rating;
 
+    @GeoSpatialIndexed
+    private GeoJsonPoint location;  // GeoJSON point (longitude, latitude)
 }

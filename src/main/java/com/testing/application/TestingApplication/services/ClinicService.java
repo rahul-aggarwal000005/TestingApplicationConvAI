@@ -1,9 +1,11 @@
 package com.testing.application.TestingApplication.services;
 
+import com.testing.application.TestingApplication.dto.GeoLocation;
 import com.testing.application.TestingApplication.models.ClinicDetails;
 import com.testing.application.TestingApplication.repositories.ClinicRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -16,6 +18,7 @@ public class ClinicService {
     private static final Logger logger = LoggerFactory.getLogger(ClinicService.class);
 
     private final ClinicRepository clinicRepository;
+    private final GeocodingService geocodingService;
 
     // Merging Only Non-Null Fields Using Reflection
     private void mergeNonNullFields(Object source, Object target) {
@@ -35,8 +38,9 @@ public class ClinicService {
         }
     }
 
-    public ClinicService(ClinicRepository clinicRepository) {
+    public ClinicService(ClinicRepository clinicRepository, GeocodingService geocodingService) {
         this.clinicRepository = clinicRepository;
+        this.geocodingService = geocodingService;
     }
 
     public List<ClinicDetails> getAllClinics() {
@@ -45,6 +49,9 @@ public class ClinicService {
     }
 
     public ClinicDetails createClinicCentre(ClinicDetails clinicDetails) {
+        GeoLocation geoLocation = geocodingService.getLatLongForLocation(clinicDetails.getCity(), clinicDetails.getZipCode());
+        clinicDetails.setLocation(new GeoJsonPoint(geoLocation.longitude(), geoLocation.latitude()));
+
         logger.info("Creating new clinic centre");
         return clinicRepository.insert(clinicDetails);
     }
@@ -77,4 +84,9 @@ public class ClinicService {
         clinicRepository.deleteById(id);
     }
 
+    public List<ClinicDetails> getNearByClinics(String city, String zipcode) {
+        GeoLocation geoLocation = geocodingService.getLatLongForLocation(city, zipcode);
+        return clinicRepository
+                .findNearbyClinics(geoLocation.longitude(), geoLocation.latitude());
+    }
 }
